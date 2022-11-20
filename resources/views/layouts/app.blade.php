@@ -63,7 +63,13 @@
                                     <a class="dropdown-item" href="{{ route('patient.index') }}">
                                    
                                      {{ __('Patient Info') }}
-                                 </a>
+                                    </a>
+
+                                    <a class="dropdown-item" href="{{ route('time.index') }}">
+                                   
+                                        {{ __('Set Appointments') }}
+                                       </a>
+   
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf

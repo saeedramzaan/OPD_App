@@ -16,6 +16,15 @@ class PatientController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct(Request $request)
+    {
+        $this->app_time = null;
+        $this->app_no = 1;
+        $this->common_insert = false;
+        $this->email = $request->email;
+        $this->date = $request->date;
+    }
+
     public function index()
     {
 
@@ -43,6 +52,11 @@ class PatientController extends Controller
         return view('createPatient');
     }
 
+    public function getArray()
+    {
+
+    }
+
     public function search(Request $request)
     {
 
@@ -52,6 +66,18 @@ class PatientController extends Controller
             ->orWhere('email', 'LIKE', '%' . $data . '%')->orWhere('address', 'LIKE', '%' . $data . '%')->orWhere('mobile_no', 'LIKE', '%' . $data . '%')->orWhere('date', 'LIKE', '%' . $data . '%')->orWhere('time', 'LIKE', '%' . $data . '%')->get();
 
         return json_encode(array('data' => $userData));
+    }
+
+    public function is_patient_exist()
+    {
+
+        $appointment_date = $this->date;
+
+        $d_format = Carbon::parse($appointment_date)->format('Y-m-d');
+
+        $patient_record = patient::Where('email', $this->email)->Where('date', $d_format)->exists();
+
+        return $patient_record;
     }
 
     /**
@@ -64,23 +90,19 @@ class PatientController extends Controller
     {
 
         request()->validate([
-            'name' => 'required|regex:/^[a-zA-Z]+$/u|max:255',
-            'email' => 'required',
+            'name' => 'required|max:255',
+            'email' => 'required|',
             'mobile_no' => 'required|numeric|digits:10',
         ]);
 
         $appointment_date = $request->date;
 
+        $app_id = DB::table('patients')->Where('date', $appointment_date)->max('appointment_no');
+
         $d_format = Carbon::parse($appointment_date)->format('Y-m-d');
 
         $day = Carbon::createFromFormat('Y-m-d', $d_format)->format('l');
 
-        $patient_record = patient::Where('email', $request->email)->Where('date', $d_format)->exists();
-
-        //   return $patient_record;
-        $app_id = DB::table('patients')->max('id') + 1;
-
-        $appointment_id = $app_id;
         $name = $request->name;
         $email = $request->email;
         $address = $request->address;
@@ -88,88 +110,89 @@ class PatientController extends Controller
         $date = $request->date;
         $msg = "Your appointment has been booked";
 
-        if ($patient_record == null) {
+        if ($this->is_patient_exist() == null) {
 
-            $last_record = patient::find(DB::table('patients')->Where('date', $appointment_date)->max('id'));
-
-            if ($last_record == null) {
+            if ($app_id == null) {
 
                 $start_time = DB::table('times')->where('day', $day)->value('start_time');
                 $shorted_start_time = date('H:i', strtotime($start_time));
+
                 if ($start_time == null) {
 
                     return redirect("/create")->with('success', 'Doctor is not available on ' . $day);
 
                 } else {
 
-                    $message = "Appointment No: " . $appointment_id . "\r\n" . " Name :- " . $name . "\r\n" . " Email :- " . $email . "\n\n" . " Phone Number :- " . $mobile . "\n\n" . " Date :- " . $d_format . " Time :- " . $shorted_start_time . " Message :- " . $msg;
-
-                    $patient = new patient();
-                    $patient->name = $name;
-                    $patient->email = $email;
-                    $patient->address = $address;
-                    $patient->mobile_no = $request->mobile_no;
-                    $patient->date = $appointment_date;
-                    $patient->time = $start_time;
-                    $patient->save();
-
-                    $details = [
-                        'title' => 'Appointment Details',
-                        'body' => $message,
-                        'header' => 'Content-Type: text/plain; charset=ISO-8859-1\r\n',
-                    ];
-
-                    \Mail::to('saeedramzaan@gmail.com')->send(new \App\Mail\sendMail($details));
-
-                    return redirect("/create")->with('success', 'Appointment details have been sent to your email. Please check');
+                    $this->app_time = $shorted_start_time;
+                    $this->common_insert = true;
                 }
             } else {
 
-                $time = $last_record->time;
+                $last_record = patient::find(DB::table('patients')->Where('date', $appointment_date)->max('id'));
 
-                $end_time = DB::table('times')->where('day', $day)->value('end_time');
+                if ($last_record == null) {
 
-                $shorted_time = date('H:i', strtotime($time));
-                $shorted_end_time = date('H:i', strtotime($end_time));
-
-                if ($shorted_time == $shorted_end_time) {
-
-                    return redirect("/create")->with('success', 'No appoinent is avaible today. Please try another day');
+                    return "No last record";
 
                 } else {
 
-                    $duration = DB::table('times')->where('day', $day)->value('duration');
+                    $time = $last_record->time;
 
-                    $carbon_date = Carbon::parse($time);
-                    $add_minutes = $carbon_date->addMinutes($duration);
-                    $convert_time = date('H:i', strtotime($add_minutes));
+                    $end_time = DB::table('times')->where('day', $day)->value('end_time');
 
-                    $patient = new patient();
-                    $patient->name = $name;
-                    $patient->email = $email;
-                    $patient->address = $address;
-                    $patient->mobile_no = $mobile;
-                    $patient->date = $appointment_date;
-                    $patient->time = $convert_time;
-                    $patient->save();
+                    $shorted_time = date('H:i', strtotime($time));
 
-                    $message = " Appointment No: " . $appointment_id . "\r\n" . " Name :- " . $name . "\r\n" . " Email :- " . $email . "\n\n" . " Phone Number :- " . $mobile . "\n\n" . " Date :- " . $d_format . " Time :- " . $shorted_time . " Message :- " . $msg;
+                    $shorted_end_time = date('H:i', strtotime($end_time));
 
-                    $details = [
-                        'title' => 'Appointment Details',
-                        'body' => $message,
-                        'header' => 'Content-Type: text/plain; charset=ISO-8859-1\r\n',
-                    ];
+                    if ($shorted_time == $shorted_end_time) {
 
-                    \Mail::to('saeedramzaan@gmail.com')->send(new \App\Mail\sendMail($details));
+                        return redirect("/create")->with('success', 'No appoinent is avaible today. Please try another day');
 
-                    return redirect()->back()->with('success', 'Email has been sent');
+                    } else {
 
+                        $this->common_insert = true;
+                        $this->app_no = $app_id + 1;
+
+                        $duration = DB::table('times')->where('day', $day)->value('duration');
+
+                        $carbon_date = Carbon::parse($time);
+                        $add_minutes = $carbon_date->addMinutes($duration);
+                        $convert_time = date('H:i', strtotime($add_minutes));
+
+                        $this->app_time = date('H:i', strtotime($convert_time));
+
+                    }
                 }
             }
         } else {
 
             return redirect("/create")->with('success', 'You have already booked the appiontment today');
+
+        }
+
+        if ($this->common_insert == true) {
+
+            $patient = new patient();
+            $patient->appointment_no = $this->app_no;
+            $patient->name = $name;
+            $patient->email = $email;
+            $patient->address = $address;
+            $patient->mobile_no = $mobile;
+            $patient->date = $appointment_date;
+            $patient->time = $this->app_time;
+            $patient->save();
+
+            $message = " Appointment No: " . $this->app_no . "/" . " Name: " . $name . "/" . " Email: " . $email . "/" . " Phone Number: " . $mobile . "/" . " Date: " . $d_format . "/" . " Time: " . $this->app_time . "/" . " Message: " . $msg;
+
+            $details = [
+                'title' => 'Appointment Details',
+                'body' => $message,
+                'header' => 'Content-Type: text/plain; charset=ISO-8859-1\r\n',
+            ];
+
+            \Mail::to('saeedramzaan@gmail.com')->send(new \App\Mail\sendMail($details));
+
+            return redirect()->back()->with('success', 'Appointment details have been sent to your email. Please check..');
 
         }
     }

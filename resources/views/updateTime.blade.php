@@ -16,7 +16,7 @@
                                     class="col-md-4 col-form-label text-md-end">{{ __('Start time') }}</label>
 
                                 <div class="col-md-6">
-                                    <input id="name" type="text"
+                                    <input id="name" type="time"
                                         class="form-control @error('start_time') is-invalid @enderror" name="start_time"
                                         value="{{ $convert_start_time = date('H:i', strtotime($time->start_time)) }}"
                                         required autocomplete="name" autofocus>
@@ -34,7 +34,7 @@
                                     class="col-md-4 col-form-label text-md-end">{{ __('End Time') }}</label>
 
                                 <div class="col-md-6">
-                                    <input id="end_time" type="text"
+                                    <input id="end_time" type="time"
                                         class="form-control @error('end_time') is-invalid @enderror" name="end_time"
                                         value="{{ $convert_end_time = date('H:i', strtotime($time->end_time)) }}" required
                                         autocomplete="email">

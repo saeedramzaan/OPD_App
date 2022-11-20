@@ -34,6 +34,7 @@ Route::get('/create', [PatientController::class,'create'])->name('test');
 
 Route::get('/search', [PatientController::class,'search'] );
 
+Route::get('/getArray', [PatientController::class, 'getArray']);
 
 Route::get('/del/{id}', [TimeController::class,'delete'] )->name('del');
 

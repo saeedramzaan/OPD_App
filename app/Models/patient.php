@@ -14,7 +14,8 @@ class patient extends Model
         'email',
         'address',
         'mobile_no',
-        'date'
+        'date',
+        'appointment_date',
     ];
 
 }

@@ -102,7 +102,7 @@
                                 '</button>';
 
                             bodyData += "<tr>"
-                            bodyData += "<td>" + i++ + "</td><td>" + row.name +
+                            bodyData += "<td>" + row.appointment_no + "</td><td>" + row.name +
                                 "</td><td>" + row.email + "</td><td>" + row.address + "</td><td>" + row
                                 .mobile_no + "</td><td>" + row.date + "</td><td>" + time_array + "</td>"
                             bodyData += "</tr>";
@@ -148,7 +148,7 @@
 
                                 var time_array = (array[0] + " : " + array[1]);
 
-                                var editUrl = url + '/' + row.id + "/edit";
+                                var editUrl = url + '/' + row.appointment_no + "/edit";
                                 let showBtn = '<button ' +
                                     ' class="btn btn-outline-success" ' +
                                     ' onclick="">Show' +

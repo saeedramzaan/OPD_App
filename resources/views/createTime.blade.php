@@ -16,7 +16,7 @@
                                     class="col-md-4 col-form-label text-md-end">{{ __('Start time') }}</label>
 
                                 <div class="col-md-6">
-                                    <input id="name" type="text"
+                                    <input id="name" type="time"
                                         class="form-control @error('name') is-invalid @enderror" name="start_time"
                                         value="{{ old('start_time') }}" required autocomplete="name" autofocus>
 
@@ -33,7 +33,7 @@
                                     class="col-md-4 col-form-label text-md-end">{{ __('End Time') }}</label>
 
                                 <div class="col-md-6">
-                                    <input id="end_time" type="text"
+                                    <input id="end_time" type="time"
                                         class="form-control @error('email') is-invalid @enderror" name="end_time"
                                         value="{{ old('end_time') }}" required autocomplete="email">
 
@@ -47,7 +47,7 @@
 
                             <div class="row mb-3">
                                 <label for="password"
-                                    class="col-md-4 col-form-label text-md-end">{{ __('Duration') }}</label>
+                                    class="col-md-4 col-form-label text-md-end">{{ __('Duration(Minutes)') }}</label>
 
                                 <div class="col-md-6">
                                     <input id="duration" type="text"
