@@ -15,6 +15,8 @@ use App\Http\Controllers\PatientController;
 |
 */
 
+Route::post('/postSearch', [PatientController::class, 'postSearch']);
+
 Route::get('/patientInfo', [PatientController::class, 'patientInfo']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

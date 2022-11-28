@@ -34,6 +34,17 @@ class PatientController extends Controller
 
     }
 
+    public function postSearch(Request $request)
+    {
+
+        $data = $request->title;
+
+        $userData = patient::where('name', 'LIKE', '%' . $data . '%')
+        ->orWhere('email', 'LIKE', '%' . $data . '%')->orWhere('address', 'LIKE', '%' . $data . '%')->orWhere('mobile_no', 'LIKE', '%' . $data . '%')->orWhere('date', 'LIKE', '%' . $data . '%')->orWhere('time', 'LIKE', '%' . $data . '%')->get();
+
+        return json_encode(array('data' => $userData));
+    }
+
     public function patientInfo()
     {
 
