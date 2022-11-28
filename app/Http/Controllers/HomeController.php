@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\time; 
+use App\Models\Time; 
 
 class HomeController extends Controller
 {
@@ -24,7 +24,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $times = time::all();
+        $times = Time::all();
         return view('viewTime', compact('times'));
     }
 }

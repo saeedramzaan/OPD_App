@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\patient;
-use App\Models\time;
+use App\Models\Patient;
+use App\Models\Time;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +28,7 @@ class PatientController extends Controller
     public function index()
     {
 
-        $patients = patient::all();
+        $patients = Patient::all();
 
         return view('index', compact('patients'));
 
@@ -39,7 +39,7 @@ class PatientController extends Controller
 
         $data = $request->title;
 
-        $userData = patient::where('name', 'LIKE', '%' . $data . '%')
+        $userData = Patient::where('name', 'LIKE', '%' . $data . '%')
         ->orWhere('email', 'LIKE', '%' . $data . '%')->orWhere('address', 'LIKE', '%' . $data . '%')->orWhere('mobile_no', 'LIKE', '%' . $data . '%')->orWhere('date', 'LIKE', '%' . $data . '%')->orWhere('time', 'LIKE', '%' . $data . '%')->get();
 
         return json_encode(array('data' => $userData));
@@ -48,7 +48,7 @@ class PatientController extends Controller
     public function patientInfo()
     {
 
-        $patients = patient::all();
+        $patients = Patient::all();
 
         return json_encode(array('data' => $patients));
     }
@@ -73,7 +73,7 @@ class PatientController extends Controller
 
         $data = $request->name;
 
-        $userData = patient::where('name', 'LIKE', '%' . $data . '%')
+        $userData = Patient::where('name', 'LIKE', '%' . $data . '%')
             ->orWhere('email', 'LIKE', '%' . $data . '%')->orWhere('address', 'LIKE', '%' . $data . '%')->orWhere('mobile_no', 'LIKE', '%' . $data . '%')->orWhere('date', 'LIKE', '%' . $data . '%')->orWhere('time', 'LIKE', '%' . $data . '%')->get();
 
         return json_encode(array('data' => $userData));
@@ -86,7 +86,7 @@ class PatientController extends Controller
 
         $d_format = Carbon::parse($appointment_date)->format('Y-m-d');
 
-        $patient_record = patient::Where('email', $this->email)->Where('date', $d_format)->exists();
+        $patient_record = Patient::Where('email', $this->email)->Where('date', $d_format)->exists();
 
         return $patient_record;
     }
@@ -139,7 +139,7 @@ class PatientController extends Controller
                 }
             } else {
 
-                $last_record = patient::find(DB::table('patients')->Where('date', $appointment_date)->max('id'));
+                $last_record = Patient::find(DB::table('patients')->Where('date', $appointment_date)->max('id'));
 
                 if ($last_record == null) {
 
@@ -183,7 +183,7 @@ class PatientController extends Controller
 
         if ($this->common_insert == true) {
 
-            $patient = new patient();
+            $patient = new Patient();
             $patient->appointment_no = $this->app_no;
             $patient->name = $name;
             $patient->email = $email;

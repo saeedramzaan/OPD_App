@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\time;
+use App\Models\Time;
 use Illuminate\Http\Request;
 
 class TimeController extends Controller
@@ -24,7 +24,7 @@ class TimeController extends Controller
      */
     public function index()
     {
-        $times = time::all();
+        $times = Time::all();
         return view('viewTime', compact('times'));
     }
 
@@ -47,7 +47,7 @@ class TimeController extends Controller
     public function store(Request $request)
     {
 
-        $patient = new time();
+        $patient = new Time();
         $patient->start_time = $request->start_time;
         $patient->end_time = $request->end_time;
         $patient->duration = $request->duration;
@@ -77,7 +77,7 @@ class TimeController extends Controller
      */
     public function edit($id)
     {
-        $time = time::find($id);
+        $time = Time::find($id);
         return view('updateTime', compact('time'));
     }
 
@@ -91,7 +91,7 @@ class TimeController extends Controller
     public function update(Request $request, $id)
     {
 
-        $patient = time::find($id);
+        $patient = Time::find($id);
         $patient->start_time = $request->start_time;
         $patient->end_time = $request->end_time;
         $patient->duration = $request->duration;
@@ -115,7 +115,7 @@ class TimeController extends Controller
 
     public function delete($id)
     {
-        $user = time::find($id);
+        $user = Time::find($id);
         $user->delete();
         return redirect('/time')->with('success', 'Data Successfully Deleted');
     }
