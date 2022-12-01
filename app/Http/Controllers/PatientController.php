@@ -7,6 +7,7 @@ use App\Models\Time;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Response;
 
 class PatientController extends Controller
 {
@@ -63,9 +64,130 @@ class PatientController extends Controller
         return view('createPatient');
     }
 
-    public function getArray()
+    public function saveData(Request $request)
     {
 
+        request()->validate([
+            'name' => 'required|max:255',
+            'email' => 'required|',
+            'mobile_no' => 'required|numeric|digits:10',
+            'address' => 'required|',
+            'date' => 'required|',
+        ]);
+
+        $appointment_date = $request->date;
+
+        $app_id = DB::table('patients')->Where('date', $appointment_date)->max('appointment_no');
+
+        $d_format = Carbon::parse($appointment_date)->format('Y-m-d');
+
+        $day = Carbon::createFromFormat('Y-m-d', $d_format)->format('l');
+
+        $name = $request->name;
+        $email = $request->email;
+        $address = $request->address;
+        $mobile = $request->mobile_no;
+        $date = $request->date;
+        $msg = "Your appointment has been booked";
+
+        if ($this->is_patient_exist() == null) {
+
+            if ($app_id == null) {
+
+                $start_time = DB::table('times')->where('day', $day)->value('start_time');
+                $shorted_start_time = date('H:i', strtotime($start_time));
+
+                if ($start_time == null) {
+
+                    return response()->json([
+                        'message' => "Doctor is not available on ' . $day",
+                        'status' => "error"
+                    ],200);
+                  //  return redirect("/create")->with('success', 'Doctor is not available on ' . $day);
+
+                } else {
+
+                    $this->app_time = $shorted_start_time;
+                    $this->common_insert = true;
+                }
+            } else {
+
+                $last_record = Patient::find(DB::table('patients')->Where('date', $appointment_date)->max('id'));
+
+                if ($last_record == null) {
+
+                    return "No last record";
+
+                } else {
+
+                    $time = $last_record->time;
+
+                    $end_time = DB::table('times')->where('day', $day)->value('end_time');
+
+                    $shorted_time = date('H:i', strtotime($time));
+
+                    $shorted_end_time = date('H:i', strtotime($end_time));
+
+                    if ($shorted_time == $shorted_end_time) {
+
+                        return response()->json([
+                            'message' => "No appoinent is avaible today. Please try another day",
+                            'status' => "error"
+                        ],200);
+                        
+                    } else {
+
+                        $this->common_insert = true;
+                        $this->app_no = $app_id + 1;
+
+                        $duration = DB::table('times')->where('day', $day)->value('duration');
+
+                        $carbon_date = Carbon::parse($time);
+                        $add_minutes = $carbon_date->addMinutes($duration);
+                        $convert_time = date('H:i', strtotime($add_minutes));
+
+                        $this->app_time = date('H:i', strtotime($convert_time));
+
+                    }
+                }
+            }
+        } else {
+
+            return response()->json([
+                'message' => "You have already booked the appiontment today",
+                'status' => "error"
+            ],200);
+
+          //  return redirect("/create")->with('success', 'You have already booked the appiontment today');
+        }
+
+        if ($this->common_insert == true) {
+
+            $patient = new Patient();
+            $patient->appointment_no = $this->app_no;
+            $patient->name = $name;
+            $patient->email = $email;
+            $patient->address = $address;
+            $patient->mobile_no = $mobile;
+            $patient->date = $appointment_date;
+            $patient->time = $this->app_time;
+            $patient->save();
+
+            $message = " Appointment No: " . $this->app_no . "/" . " Name: " . $name . "/" . " Email: " . $email . "/" . " Phone Number: " . $mobile . "/" . " Date: " . $d_format . "/" . " Time: " . $this->app_time . "/" . " Message: " . $msg;
+
+            $details = [
+                'title' => 'Appointment Details',
+                'body' => $message,
+                'header' => 'Content-Type: text/plain; charset=ISO-8859-1\r\n',
+            ];
+
+            \Mail::to('saeedramzaan@gmail.com')->send(new \App\Mail\sendMail($details));
+
+            return response()->json([
+                'message' => "Appointment details have been sent to your email. Please check..",
+                'status' => "success"
+            ],200);
+        }
     }
 
     public function search(Request $request)
